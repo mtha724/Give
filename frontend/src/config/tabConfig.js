@@ -115,3 +115,23 @@ export const profilePageTabConfig = [
    },
 ];  
 
+export const postTabConfig = [
+    {
+        icon: "/groups.svg",
+        label: "View Post",
+        activeKey: "post",
+        link: null,
+    },
+    {
+        icon: "/Home.png",
+        label: "Home Feed",
+        activeKey: "home",
+        link: "/home",
+    },
+    {
+        icon: "/Eye.png",
+        label: "Explore Polls",
+        activeKey: null,
+        link: "/explore",
+    },
+];

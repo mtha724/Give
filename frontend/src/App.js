@@ -18,8 +18,10 @@ import RequireAuth from './components/RequireAuth';
 import Group from "./pages/Group";
 import PublicProfile from "./pages/PublicProfile";
 import ProfileScreen from "./pages/ProfilePage";
-import PostPage from "./pages/PostPage";
+import Post from "./pages/Post";
 import Explore from "./pages/Explore";
+import PostScreen from "./pages/Post";
+
 
 /**
  * Fetch post data from the backend API.
@@ -100,8 +102,8 @@ function App() {
         element: <PublicProfile />,
       },
       {
-        path: "/post/:postId",
-        element: <PostPage />,
+  path: "/post/:postId",
+  element: <Post />, 
       },
       {
         path: "/explore",

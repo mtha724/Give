@@ -3,6 +3,10 @@ import { useParams, Navigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
+import AppLayout from "../layouts/AppLayout";
+import LeftSideBar from "../components/LeftSideBar";
+import GroupSearch from "../components/GroupSearch";
+import { profileTabConfig } from "../config/tabConfig";
 
 export default function PublicProfile() {
   const { userId } = useParams();
@@ -34,28 +38,46 @@ export default function PublicProfile() {
     };
   }, [userId]);
 
-  if (loading) return <div className="p-6">Loading…</div>;
+  if (loading) return (
+    <AppLayout
+      left={<LeftSideBar screenTabProps={{ tabConfig: profileTabConfig, onTabChange: () => {}, onCurrentTab: "profile" }} extra={null} />}
+      center={<div className="p-6">Loading</div>}
+      right={<GroupSearch />}
+    />
+  );
   // If this public profile is the same as the logged-in user, go to private profile page
   if (authUser && authUser.uid === userId) return <Navigate to="/profile" replace />;
-  if (error) return <div className="p-6 text-red-600">{error}</div>;
+  if (error) return (
+    <AppLayout
+      left={<LeftSideBar screenTabProps={{ tabConfig: profileTabConfig, onTabChange: () => {}, onCurrentTab: "profile" }} extra={null} />}
+      center={<div className="p-6 text-red-600">{error}</div>}
+      right={<GroupSearch />}
+    />
+  );
   if (!user) return null;
 
   const name = user.displayName || user.username || "User";
   const photoURL = user.photoURL || user.profilePic || "/images/noPfp.jpg";
 
   return (
-    <div className="p-8 bg-backgroundGrey rounded-2xl">
-      <div className="flex items-center gap-6">
-        <img
-          src={photoURL}
-          alt={`${name} avatar`}
-          className="w-28 h-28 rounded-full object-cover border"
-        />
-        <div>
-          <h2 className="text-3xl font-bold">{name}</h2>
-          {user.bio && <p className="text-gray-700 mt-1">{user.bio}</p>}
+    <AppLayout
+      left={<LeftSideBar screenTabProps={{ tabConfig: profileTabConfig, onTabChange: () => {}, onCurrentTab: "profile" }} extra={null} />}
+      center={
+        <div className="p-8 bg-backgroundGrey rounded-2xl">
+          <div className="flex items-center gap-6">
+            <img
+              src={photoURL}
+              alt={`${name} avatar`}
+              className="w-28 h-28 rounded-full object-cover border"
+            />
+            <div>
+              <h2 className="text-3xl font-bold">{name}</h2>
+              {user.bio && <p className="text-gray-700 mt-1">{user.bio}</p>}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      }
+      right={<GroupSearch />}
+    />
   );
 }

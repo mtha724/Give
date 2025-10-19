@@ -16,7 +16,7 @@ export default function PostsList({ posts }) {
     if (!posts?.length) return (
         <div className="w-full mx-auto">
             <div className="bg-backgroundGrey p-4 rounded-3xl shadow-md">
-                <p className="text-gray-500 text-sm">Post not found.</p>
+                <p className="text-gray-500 text-sm">No posts found.</p>
             </div>
         </div>);
   return posts.map((p) => (

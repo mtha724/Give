@@ -1,5 +1,6 @@
 const { db, admin } = require("../firebase/firebase");
 
+
 /**
  * Create a new post and save it to Firestore.
  *
@@ -23,10 +24,33 @@ exports.createPost = async (req, res) => {
       authorPhotoURL,
         polls = [],
       group,
+      expiryOption = "none", // "none" | "10s" | "1d" | "7d" | "30d"
+
+
     } = req.body;
+
 
     if (!content || !content.trim())
       return res.status(400).json({ error: "Content is required" });
+
+
+    // compute expiresAt from expiryOption
+    const now = admin.firestore.Timestamp.now();
+    const optionToSeconds = {
+      "10s": 10,
+      "1d": 60 * 60 * 24,
+      "7d": 60 * 60 * 24 * 7,
+      "30d": 60 * 60 * 24 * 30,
+      none: 0,
+    };
+    const seconds = optionToSeconds[expiryOption] ?? 0;
+    const expiresAt =
+      seconds > 0
+        ? admin.firestore.Timestamp.fromMillis(now.toMillis() + seconds * 1000)
+        : null;
+
+
+
 
     // Create the post object
     const post = {
@@ -44,13 +68,18 @@ exports.createPost = async (req, res) => {
         : [],
         group,
       voters: [],
+      commentRefs: [],
+      expiryOption,
+      expiresAt, // used for countdown, filtering, and optional TTL deletion
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+
     // Add the post to Firestore
     const ref = await db.collection("posts").add(post);
     const snap = await ref.get();
+
 
     res.status(201).json({ id: ref.id, ...snap.data() });
   } catch (e) {
@@ -58,6 +87,7 @@ exports.createPost = async (req, res) => {
     res.status(500).json({ error: "Failed to create post" });
   }
 };
+
 
 /**
  * Get a list of posts from Firestore, ordered by creation date (newest first).
@@ -77,6 +107,7 @@ exports.getPosts = async (req, res) => {
   try {
       const limitCount = Number(req.query.limitCount ?? 10);
       const groupId = String(req.query.groupId ?? "default");
+      const excludeExpired = String(req.query.excludeExpired ?? "true") === "true";
       var snap = await db
           .collection("posts")
           .orderBy("createdAt", "desc")
@@ -89,12 +120,20 @@ exports.getPosts = async (req, res) => {
               .limit(limitCount)
               .get();
       }
-    res.json(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const now = admin.firestore.Timestamp.now();
+    const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const filtered = excludeExpired
+      ? all.filter((p) => !p.expiresAt || p.expiresAt.toMillis() > now.toMillis())
+      : all;
+    res.json(filtered);
+
+
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to fetch posts" });
   }
 };
+
 
 /**
  * Handle poll voting for a specific post.
@@ -116,23 +155,33 @@ exports.votePoll = async (req, res) => {
     const { postId } = req.params;
       const { optionIndex, authorId } = req.body;
 
+
     // Log incoming vote request for debugging
     console.log("Vote request received:", { postId, optionIndex });
+
 
     // Validate that optionIndex is a number (required for array indexing)
     if (typeof optionIndex !== "number")
       return res.status(400).json({ error: "optionIndex is required" });
 
+
     // Get reference to the specific post document in Firestore
     const postRef = db.collection("posts").doc(postId);
     const postSnap = await postRef.get();
+
 
     // Check if the post exists in the database
     if (!postSnap.exists)
       return res.status(404).json({ error: "Post not found" });
 
+
     // Extract post data from Firestore document
     const postData = postSnap.data();
+    const now = admin.firestore.Timestamp.now();
+    if (postData.expiresAt && postData.expiresAt.toMillis() <= now.toMillis()) {
+      return res.status(400).json({ error: "Poll has expired" });
+    }
+
 
     // Log current poll state before making changes
     console.log(
@@ -140,12 +189,15 @@ exports.votePoll = async (req, res) => {
       JSON.stringify(postData.polls, null, 2)
     );
 
+
     // Validate that polls array exists and the requested option index is valid
     if (!Array.isArray(postData.polls) || !postData.polls[optionIndex])
       return res.status(400).json({ error: "Invalid poll option" });
 
+
     // Create a copy of the polls array to avoid mutating the original
     const updatedPolls = [...postData.polls];
+
 
     // Increment the vote count for the selected poll option
     // Use 0 as default if votes property doesn't exist
@@ -154,8 +206,10 @@ exports.votePoll = async (req, res) => {
       votes: (updatedPolls[optionIndex].votes || 0) + 1,
     };
 
+
     // Log the updated polls array for debugging
     console.log("Updated polls array:", JSON.stringify(updatedPolls, null, 2));
+
 
     // Update the post document in Firestore with new poll data
     await postRef.update({
@@ -163,9 +217,12 @@ exports.votePoll = async (req, res) => {
         voters: admin.firestore.FieldValue.arrayUnion(authorId),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(), // Track when the vote was made
 
+
     });
 
+
     console.log("Vote update successful");
+
 
     // Retrieve the updated post to verify changes were saved correctly
     const updatedSnap = await postRef.get();
@@ -174,11 +231,13 @@ exports.votePoll = async (req, res) => {
       JSON.stringify(updatedSnap.data().polls, null, 2)
     );
 
+
     // Send success response to client
     res.json({ success: true });
   } catch (err) {
     // Log any errors that occur during the voting process
     console.error("Vote error:", err);
+
 
     // Send error response to client
     res.status(500).json({ error: "Failed to vote" });

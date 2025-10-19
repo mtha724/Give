@@ -482,7 +482,7 @@ export default function CreatePost() {
               <button
                 type="submit"
                 disabled={submitting || !text.trim()}
-                className="rounded-md bg-darkGrey text-black px-16 font-semibold py-2 disabled:opacity-60"
+                              className="rounded-md bg-defaultYellow text-black px-16 font-semibold py-2 disabled:opacity-60 hover:bg-yellow-400 "
               >
                 {/* Dynamic button text based on submission state */}
                 {submitting ? "Posting..." : "Post"}

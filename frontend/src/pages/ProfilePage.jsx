@@ -1,9 +1,11 @@
+/**
+ * Home page component.
+ */
 import React, { useState } from "react";
 import AppLayout from "../layouts/AppLayout";
 import LeftSidebar from "../components/LeftSideBar";
-import { SuggestedBox, GroupSearch, CreatePost, CreateGroup } from "../";
-import Profile from "../components/Profile";
-import { homeTabConfig } from "../config/tabConfig";
+import { SuggestedBox, GroupSearch, CreatePost, CreateGroup, Profile } from "../";
+import { profileTabConfig } from "../config/tabConfig";
 import RequireAuth from '../components/RequireAuth';
 
 /**
@@ -11,7 +13,7 @@ import RequireAuth from '../components/RequireAuth';
  * @returns {JSX.Element}
  */
 export default function ProfileScreen() {
-    const [currentTab, setCurrentTab] = useState("home");
+    const [currentTab, setCurrentTab] = useState("profile");
 
     const showCreate = currentTab === "create";
 
@@ -22,7 +24,7 @@ export default function ProfileScreen() {
             left={
                 <LeftSidebar
                     screenTabProps={{
-                        tabConfig: homeTabConfig,
+                        tabConfig: profileTabConfig,
                         onTabChange: setCurrentTab,
                         onCurrentTab: currentTab,
                     }}

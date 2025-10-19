@@ -84,7 +84,7 @@ const Login = () => {
       <div className="w-[45%] flex justify-start items-center pl-[100px]">
         <div className="flex flex-col mb-[70px] ml-[25px] gap-1">
           <header>
-            <h1 className="text-defaultYellow text-[7rem] uppercase m-0 text-left font-header">
+                      <h1 className="text-defaultYellow text-[7rem] uppercase m-0 text-left font-header">
               Give
             </h1>
           </header>
@@ -119,11 +119,11 @@ const Login = () => {
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           {/* Success message (brief feedback) */}
-          {success && <p className="text-green-500 text-sm">{success}</p>}
+          {success && <p className="text-pink-400 text-sm">{success}</p>}
 
           {/* Primary login button */}
           <button
-            className="bg-pink-200 text-white py-3 rounded-lg text-lg hover:bg-pink-400 transition-colors"
+            className="bg-pink-300 text-white py-3 rounded-lg text-lg hover:bg-pink-400 transition-colors"
             onClick={handleLogin}
           >
             Log In
@@ -131,7 +131,7 @@ const Login = () => {
 
           {/* Navigate to create account page */}
           <button
-            className="bg-defaultYellow text-white py-3 rounded-lg text-lg hover:bg-[#d2b122] transition-colors"
+            className="bg-defaultYellow text-white py-3 rounded-lg text-lg hover:bg-yellow-400 transition-colors"
             onClick={() => navigate("/create-account")}
           >
             Create Account

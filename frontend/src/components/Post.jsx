@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import UserCard from "./UserCard";
 import PostData from "./PostData";
-import PollBox from "./PollBox";
+import CommentSection from "./comments/CommentSection";
 
 /**
  * Post Component
@@ -23,6 +23,8 @@ const Post = ({ user, group, post }) => {
 
       {/* Post content section - displays text, images, polls, and tags */}
       <PostData post={post} />
+
+      <CommentSection post={post} />
     </div>
   );
 };

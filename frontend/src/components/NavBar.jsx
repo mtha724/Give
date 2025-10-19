@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // added useNavigate
 import { useAuth } from "../contexts/AuthContext";
 import { ReactComponent as NotificationIcon } from "../assets/notification.svg";
 import { ReactComponent as SettingsIcon } from "../assets/settings.svg";
@@ -19,6 +19,7 @@ import { searchAll } from "../services/Search";
 function NavBar() {
   // Get current authenticated user from context
   const { user } = useAuth();
+  const navigate = useNavigate(); // added navigate hook
 
   // Extract display name from user data, fallback to email prefix or "User"
   const displayName =
@@ -295,8 +296,11 @@ function NavBar() {
 
       {/* Right Section - User profile and settings */}
       <div className="flex items-center gap-4 w-[27%] justify-end">
-        {/* User Profile Display */}
-        <Link to="/profile" className="flex items-center gap-2 cursor-pointer rounded-[25px]">
+        {/* User Profile Display (now clickable) */}
+        <Link
+          to="/profile"
+          className="flex items-center gap-2 cursor-pointer rounded-[25px]"
+        >
           {/* Profile Picture */}
           <div
             className={clsx(

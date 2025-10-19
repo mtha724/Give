@@ -45,3 +45,25 @@ export const homeTabConfig = [
     link: null,
    },
 ];
+
+export const profileTabConfig = [
+    {
+        icon: "/groups.svg",
+        label: "View Profile",
+        activeKey: "profile",
+        link: null,
+    },
+    {
+        icon: "/Home.png",
+        label: "Home Feed",
+        activeKey: "home",
+        link: "/home",
+    },
+    {
+        icon: "/Eye.png",
+        label: "Explore Polls",
+        activeKey: null,
+        link: "/explore",
+    },
+];
+

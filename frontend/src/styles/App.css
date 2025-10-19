@@ -43,3 +43,8 @@ main {
 .my-slick-dots li.slick-active button {
   opacity: 1;
 }
+
+::selection {
+    color: #ffffff;
+    background-color: #F472B6;
+}

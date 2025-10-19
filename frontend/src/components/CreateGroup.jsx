@@ -180,7 +180,7 @@ export default function CreateGroup() {
                             <button
                                 type="submit"
                                 disabled={submitting || !text.trim()}
-                                className="rounded-md bg-darkGrey text-black px-16 font-semibold py-2 disabled:opacity-60">
+                                className="rounded-md bg-defaultYellow text-black text-center px-10 w-full font-semibold py-2 disabled:opacity-60 hover:bg-yellow-400 ">
                                 {/* Dynamic button text based on submission state */}
                                 {submitting ? "Creating group..." : "Create group"}
                             </button>

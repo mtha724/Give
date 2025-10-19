@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { getDoc, doc, getFirestore } from "firebase/firestore";
+
 
 export async function getPostData({
   limitCount = 10,
@@ -49,4 +51,79 @@ export function usePosts(groupId = "default") {
   }, []);
 
   return { posts, loading, refreshPosts };
+}
+
+export function usePost(postId) {
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchPost = async () => {
+        try {
+            const db = getFirestore();
+            const docRef = doc(db, "posts", postId);
+            const docSnap = await getDoc(docRef);
+            const post = {
+                id: postId,
+                authorId: docSnap.data().authorId,
+                authorDisplayName: docSnap.data().authorDisplayName,
+                authorPhotoURL: docSnap.data().authorPhotoURL,
+                content: docSnap.data().content,
+                mediaUrls: docSnap.data().mediaUrls,
+                tags: docSnap.data().tags,
+                polls: docSnap.data().polls,
+                group: docSnap.data().group,
+                voters: docSnap.data().voters,
+                commentRefs: docSnap.data().commentRefs,
+                expiryOption: docSnap.data().expiryOption,
+                expiresAt: docSnap.data().expiresAt,
+                createdAt: docSnap.data().createdAt,
+                updatedAt: docSnap.data().updatedAt,
+            }
+            let postArr = [post];
+            setPosts(postArr);
+            setPosts(postArr);
+        } catch (error) {
+            console.error("Failed to fetch post:", error);
+        }
+    };
+
+    const refreshPosts = async () => {
+        await fetchPost();
+    };
+
+    useEffect(() => {
+        let alive = true;
+        (async () => {
+            try {
+                const db = getFirestore();
+                const docRef = doc(db, "posts", postId);
+                const docSnap = await getDoc(docRef);
+                const post = {
+                    id: postId,
+                    authorId: docSnap.data().authorId,
+                    authorDisplayName: docSnap.data().authorDisplayName,
+                    authorPhotoURL: docSnap.data().authorPhotoURL,
+                    content: docSnap.data().content,
+                    mediaUrls: docSnap.data().mediaUrls,
+                    tags: docSnap.data().tags,
+                    polls: docSnap.data().polls,
+                    group: docSnap.data().group,
+                    voters: docSnap.data().voters,
+                    commentRefs: docSnap.data().commentRefs,
+                    expiryOption: docSnap.data().expiryOption,
+                    expiresAt: docSnap.data().expiresAt,
+                    createdAt: docSnap.data().createdAt,
+                    updatedAt: docSnap.data().updatedAt,
+                }
+                let postArr = [post];
+                setPosts(postArr);
+                if (alive) setPosts(postArr);
+            } finally {
+                if (alive) setLoading(false);
+            }
+        })();
+        return () => { alive = false; };
+    });
+
+    return { posts, loading, refreshPosts };
 }

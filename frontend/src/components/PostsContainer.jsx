@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react";
-import { usePosts } from "../hooks/UsePosts";
+import { usePosts, usePost } from "../hooks/UsePosts";
 import PostsList from "./PostsList";
 
 // Create context only for posts refresh functionality
@@ -44,4 +44,30 @@ export default function PostsContainer(groupId = "default") {
       <PostsList posts={posts} />
     </PostsRefreshContext.Provider>
   );
+}
+
+/**
+ * PostContainer Component
+ * 
+ * Encapsulates post data management and provides refresh functionality
+ * to child components without prop drilling. Only wraps the posts-related
+ * components, not the entire app.
+ * Used for displaying singular post when accessed from profile page
+ */
+export function PostContainer(postId) {
+    const { postId: id } = postId;
+    const { posts, loading, refreshPosts } = usePost(id);
+
+    if (loading) return (
+        <div className="w-full mx-auto">
+            <div className="bg-backgroundGrey p-4 rounded-3xl shadow-md">
+                <p className="text-gray-500 text-sm">Loading post...</p>
+            </div>
+        </div>);
+
+    return (
+        <PostsRefreshContext.Provider value={{ refreshPosts }}>
+            <PostsList posts={posts} />
+        </PostsRefreshContext.Provider>
+    );
 }

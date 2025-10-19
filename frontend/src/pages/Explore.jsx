@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchPostsByTag } from "../services/Search";
-import AppLayout from "../layouts/AppLayout";
 import LeftSidebar from "../components/LeftSideBar";
 import PostsList from "../components/PostsList";
 import { PostsRefreshProvider } from "../components/PostsContainer";
-import { SuggestedBox, GroupSearch } from "../";
-import { homeTabConfig } from "../config/tabConfig";
+import { SuggestedBox, GroupSearch, NavBar, UserInfo, ScreenTab } from "../";
+import { homeTabConfig, exploreTabConfig } from "../config/tabConfig";
+import { getPostData } from "../hooks/UsePosts";
 
 /**
  * Explore page - displays posts filtered by tag
@@ -23,15 +23,18 @@ export default function Explore() {
 
   useEffect(() => {
     let active = true;
-    async function loadPostsByTag() {
-      if (!tag) {
-        setLoading(false);
-        return;
-      }
+    async function loadPosts() {
       try {
         setLoading(true);
         setError("");
-        const postData = await fetchPostsByTag(tag);
+        let postData = [];
+        if (tag) {
+          // Filter by tag
+          postData = await fetchPostsByTag(tag);
+        } else {
+          // No tag provided: behave like home (latest posts)
+          postData = await getPostData({ limitCount: 30, orderByField: "createdAt", orderDirection: "desc" });
+        }
         if (!active) return;
         setPosts(postData);
       } catch (err) {
@@ -42,7 +45,7 @@ export default function Explore() {
         if (active) setLoading(false);
       }
     }
-    loadPostsByTag();
+    loadPosts();
     return () => {
       active = false;
     };
@@ -50,66 +53,82 @@ export default function Explore() {
 
   // Expose a simple refresh function for poll updates
   const refreshPosts = async () => {
-    if (!tag) return;
     try {
-      const postData = await fetchPostsByTag(tag);
+      let postData = [];
+      if (tag) {
+        postData = await fetchPostsByTag(tag);
+      } else {
+        postData = await getPostData({ limitCount: 30, orderByField: "createdAt", orderDirection: "desc" });
+      }
       setPosts(postData);
     } catch (e) {
       console.warn("[Explore] refreshPosts failed", e);
     }
   };
 
+  // Split posts evenly across three columns (by count)
+  const [col1, col2, col3] = useMemo(() => {
+    const cols = [[], [], []];
+    posts.forEach((p, i) => cols[i % 3].push(p));
+    return cols;
+  }, [posts]);
+
   return (
-    <AppLayout
-      left={
-        <LeftSidebar
-          screenTabProps={{
-            tabConfig: homeTabConfig,
-            onTabChange: handleTabChange,
-            onCurrentTab: currentTab,
-          }}
-          extra={<SuggestedBox />}
-        />
-      }
-      center={
-        <div className="w-full">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
-              {tag ? `#${tag}` : "Explore"}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {tag ? `Posts tagged with #${tag}` : "Browse trending topics"}
-            </p>
-          </div>
-          
-          {loading && (
-            <div className="p-6 text-center text-gray-600">
-              Loading posts...
-            </div>
-          )}
-          
-          {error && (
-            <div className="p-6 text-center text-red-600">
-              {error}
-            </div>
-          )}
-          
-          {!loading && !error && posts.length === 0 && (
-            <div className="p-6 text-center text-gray-600">
-              No posts found {tag ? `with #${tag}` : ""}
-            </div>
-          )}
-          
-          {!loading && !error && posts.length > 0 && (
-            <PostsRefreshProvider value={{ refreshPosts }}>
-              <div className="flex flex-col gap-4">
-                <PostsList posts={posts} />
+    <PostsRefreshProvider value={{ refreshPosts }}>
+      <div className="font-sans">
+        <div className="h-screen flex flex-col overflow-hidden">
+          <header className="shrink-0">
+            <NavBar />
+          </header>
+          <main className="flex flex-1 min-h-0 overflow-y-auto">
+            <div className="flex flex-col flex-1 min-w-0 px-2 w-full max-w-5xl mx-auto">
+              <div className="mb-6 flex flex-col md:flex-row gap-6 items-start w-full">
+                <div className="flex-1 min-w-0">
+                  <UserInfo />
+                  <div className="mt-4">
+                    <ScreenTab tabConfig={exploreTabConfig} onTabChange={() => {}} onCurrentTab="explore" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col items-center justify-center">
+                  <h2 className="text-2xl font-bold text-gray-800 text-center">
+                    {tag ? `#${tag}` : "Explore"}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1 text-center">
+                    {tag ? `Posts tagged with #${tag}` : "Latest posts"}
+                  </p>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <SuggestedBox />
+                </div>
               </div>
-            </PostsRefreshProvider>
-          )}
+              {loading && (
+                <div className="p-6 text-center text-gray-600">Loading posts...</div>
+              )}
+              {error && (
+                <div className="p-6 text-center text-red-600">{error}</div>
+              )}
+              {!loading && !error && posts.length === 0 && (
+                <div className="p-6 text-center text-gray-600">
+                  No posts found {tag ? `with #${tag}` : ""}
+                </div>
+              )}
+              {!loading && !error && posts.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                  <div className="flex flex-col gap-4">
+                    <PostsList posts={col1} />
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <PostsList posts={col2} />
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <PostsList posts={col3} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </main>
         </div>
-      }
-      right={<GroupSearch />}
-    />
+      </div>
+    </PostsRefreshProvider>
   );
 }

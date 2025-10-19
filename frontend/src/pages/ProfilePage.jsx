@@ -15,9 +15,18 @@ import RequireAuth from '../components/RequireAuth';
 export default function ProfileScreen() {
     const [currentTab, setCurrentTab] = useState("profile");
 
-    const showCreate = currentTab === "create";
-
-    const showCreateGroup = currentTab === "createGroup";
+    // Directly rendering the appropriate component based on currentTab
+    const renderCenterComponent = () => {
+        switch (currentTab) {
+            case "create":
+                return <CreatePost />;
+            case "createGroup":
+                return <CreateGroup />;
+            case "profile":
+            default:
+                return <RequireAuth><Profile /></RequireAuth>;
+        }
+    };
 
     return (
         <AppLayout
@@ -31,12 +40,8 @@ export default function ProfileScreen() {
                     extra={<SuggestedBox />}
                 />
             }
-            center={
-                showCreate ? <CreatePost /> : <RequireAuth><Profile/></RequireAuth>
-            }
-            right={
-                showCreateGroup ? <CreateGroup /> : <GroupSearch />
-            }
+            center={renderCenterComponent()}
+            right={<GroupSearch />}
         />
     );
 }

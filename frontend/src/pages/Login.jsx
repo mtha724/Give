@@ -1,16 +1,3 @@
-/**
- * Login page
- *
- * Renders the sign-in form and handles user authentication via Firebase.
- * - Allows a user to sign in with email and password
- * - If a different user is currently signed in, attempts to sign them out first
- * - Maps Firebase errors to friendly messages using mapAuthError
- *
- * Usage:
- *  - Route to this page for user authentication.
- *
- * @module Login
- */
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -32,49 +19,48 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   // UI state for error/success messages
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [message, setMessage] = useState({ text: "", type: "" }); // { text, type: 'error' | 'success' }
+  const [isLoading, setIsLoading] = useState(false); // Handle loading state to prevent multiple submits
 
   const navigate = useNavigate();
 
   /**
-   * Handle user sign-in.
+   * Handle user sign-in and manage sign-out of any previous users.
    *
    * Flow:
-   *  - Clear any existing messages
-   *  - If a different user is currently signed in, attempt to sign them out first
-   *  - Call Firebase signInWithEmailAndPassword
-   *  - On success show a brief success message and navigate to /home
-   *  - On failure map the error to a friendly message
+   *  - Clears any existing messages.
+   *  - If a different user is signed in, it signs them out.
+   *  - Attempts Firebase signInWithEmailAndPassword.
+   *  - On success, shows a brief success message and navigates to /home.
+   *  - On failure, maps the error to a friendly message for display.
    *
    * @async
-   * @function handleLogin
+   * @function handleAuthFlow
    * @returns {Promise<void>}
    */
-  const handleLogin = async () => {
-    setError("");
-    setSuccess("");
+  const handleAuthFlow = async () => {
     try {
-      // if a different user currently signed in, sign them out first
-      if (auth.currentUser && auth.currentUser.email && auth.currentUser.email !== email) {
-        if (process.env.NODE_ENV !== 'production') console.log('Signing out current user before sign-in attempt', auth.currentUser.email);
-        try {
-          await signOut(auth);
-        } catch (signOutErr) {
-          // log sign-out failure in non-production but continue to attempt sign-in
-          if (process.env.NODE_ENV !== 'production') console.error('Failed to sign out existing user before signIn:', signOutErr);
-        }
+      // Clear any previous messages
+      setMessage({ text: "", type: "" });
+      setIsLoading(true);
+
+      // If user is logged in with a different account, sign them out first
+      if (auth.currentUser && auth.currentUser.email !== email) {
+        await signOut(auth); // Sign out the previous user
       }
 
-      // attempt Firebase email/password sign-in
+      // Attempt to sign in the user
       await signInWithEmailAndPassword(auth, email, password);
-      setSuccess("Logged in successfully");
+      setMessage({ text: "Logged in successfully!", type: "success" });
 
-      // redirect to home after a short delay (gives user feedback)
+      // Redirect after a short delay to give feedback
       setTimeout(() => navigate("/home"), 400);
     } catch (err) {
-      // convert Firebase error to a user-friendly message for display
-      setError(mapAuthError(err));
+      // Handle error by mapping the Firebase error to a user-friendly message
+      setMessage({ text: mapAuthError(err), type: "error" });
+    } finally {
+      // Disable the loading state after the request completes
+      setIsLoading(false);
     }
   };
 
@@ -84,9 +70,7 @@ const Login = () => {
       <div className="w-[45%] flex justify-start items-center pl-[100px]">
         <div className="flex flex-col mb-[70px] ml-[25px] gap-1">
           <header>
-                      <h1 className="text-defaultYellow text-[7rem] uppercase m-0 text-left font-header">
-              Give
-            </h1>
+            <h1 className="text-defaultYellow text-[7rem] uppercase m-0 text-left font-header">Give</h1>
           </header>
           <p className="text-defaultYellow text-2xl m-0 text-left">
             Can't decide? Let them vote.
@@ -103,7 +87,7 @@ const Login = () => {
             placeholder="Email"
             className="bg-pink-50 text-black px-4 py-3 border border-backgroundGrey rounded-lg text-base outline-none focus:border-pink-400"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)} // Bind email input
           />
 
           {/* Password input */}
@@ -112,21 +96,23 @@ const Login = () => {
             placeholder="Password"
             className="bg-pink-50 text-black px-4 py-3 border border-backgroundGrey rounded-lg text-base outline-none focus:border-pink-400"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)} // Bind password input
           />
 
-          {/* Error message */}
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          {/* Success message (brief feedback) */}
-          {success && <p className="text-pink-400 text-sm">{success}</p>}
+          {/* Error or success message */}
+          {message.text && (
+            <p className={`text-sm ${message.type === "error" ? "text-red-500" : "text-pink-400"}`}>
+              {message.text} {/* Display user-friendly error or success message */}
+            </p>
+          )}
 
           {/* Primary login button */}
           <button
-            className="bg-pink-300 text-white py-3 rounded-lg text-lg hover:bg-pink-400 transition-colors"
-            onClick={handleLogin}
+            className={`bg-pink-300 text-white py-3 rounded-lg text-lg hover:bg-pink-400 transition-colors ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={handleAuthFlow} // Trigger sign-in flow
+            disabled={isLoading} // Disable button while loading
           >
-            Log In
+            {isLoading ? "Logging in..." : "Log In"} {/* Show loading text */}
           </button>
 
           {/* Navigate to create account page */}

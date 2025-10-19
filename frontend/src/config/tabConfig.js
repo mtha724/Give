@@ -24,7 +24,7 @@ export const homeTabConfig = [
     icon: "/Home.png",
     label: "Home Feed",
     activeKey: "home",
-    link: null,
+    link: "/home",
   },
   {
     icon: "/Eye.png",

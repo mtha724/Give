@@ -72,6 +72,7 @@ function NavBar() {
           ...res.users.map((u) => ({
             label: `@${u.displayName || u.username || ""}`.trim(),
             type: "user",
+            userId: u.id || u.uid || "",
           })),
 
           // Group suggestions - prefixed with "Group:"
@@ -196,6 +197,29 @@ function NavBar() {
                           <Link
                             to={`/group/${s.groupId}`}
                             className="text-base text-gray-600 group-hover:text-black w-full block"
+                            onClick={() => {
+                              setShowDropdown(false);
+                              setSearchQuery("");
+                            }}
+                          >
+                            {s.label}
+                          </Link>
+                        </li>
+                      );
+                    }
+                    if (s.type === "user" && s.userId) {
+                      return (
+                        <li
+                          key={i}
+                          className="px-3 py-2 text-left group hover:bg-gray-100 cursor-pointer"
+                        >
+                          <Link
+                            to={`/profile/${s.userId}`}
+                            className="text-base text-gray-600 group-hover:text-black w-full block"
+                            onClick={() => {
+                              setShowDropdown(false);
+                              setSearchQuery("");
+                            }}
                           >
                             {s.label}
                           </Link>
@@ -244,7 +268,7 @@ function NavBar() {
       {/* Right Section - User profile and settings */}
       <div className="flex items-center gap-4 w-[27%] justify-end">
         {/* User Profile Display */}
-        <div className="flex items-center gap-2 cursor-pointer rounded-[25px]">
+        <Link to="/profile" className="flex items-center gap-2 cursor-pointer rounded-[25px]">
           {/* Profile Picture */}
           <div
             className={clsx(
@@ -262,7 +286,7 @@ function NavBar() {
           <span className="font-medium text-gray-700 text-lg">
             {displayName}
           </span>
-        </div>
+        </Link>
 
         {/* Settings Button */}
         <button className="rounded-full flex items-center justify-center">

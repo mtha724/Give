@@ -19,6 +19,7 @@ import Group from "./pages/Group";
 import PublicProfile from "./pages/PublicProfile";
 import ProfileScreen from "./pages/ProfilePage";
 import PostPage from "./pages/PostPage";
+import Explore from "./pages/Explore";
 
 /**
  * Fetch post data from the backend API.
@@ -101,6 +102,10 @@ function App() {
       {
         path: "/post/:postId",
         element: <PostPage />,
+      },
+      {
+        path: "/explore",
+        element: <Explore />,
       },
     ],
     },

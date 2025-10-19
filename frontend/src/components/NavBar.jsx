@@ -96,7 +96,11 @@ function NavBar() {
               tags[0] ||
               "";
             return match
-              ? [{ label: `#${match.replace(/^#/, "")}`, type: "tag" }]
+              ? [{ 
+                  label: `#${match.replace(/^#/, "")}`, 
+                  type: "tag",
+                  tag: match.replace(/^#/, "")
+                }]
               : [];
           }),
 
@@ -247,6 +251,23 @@ function NavBar() {
                         <li key={i} className="px-3 py-2 text-left group hover:bg-gray-100 cursor-pointer">
                           <Link
                             to={`/post/${s.id}`}
+                            className="text-base text-gray-600 group-hover:text-black w-full block"
+                            onClick={() => {
+                              setShowDropdown(false);
+                              setSearchQuery("");
+                            }}
+                          >
+                            {s.label}
+                          </Link>
+                        </li>
+                      );
+                    }
+                    // Tag link
+                    if (s.type === "tag" && s.tag) {
+                      return (
+                        <li key={i} className="px-3 py-2 text-left group hover:bg-gray-100 cursor-pointer">
+                          <Link
+                            to={`/explore?tag=${encodeURIComponent(s.tag)}`}
                             className="text-base text-gray-600 group-hover:text-black w-full block"
                             onClick={() => {
                               setShowDropdown(false);

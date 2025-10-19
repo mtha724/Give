@@ -9,7 +9,8 @@ import { homeTabConfig, exploreTabConfig } from "../config/tabConfig";
 import { getPostData } from "../hooks/UsePosts";
 
 /**
- * Explore page - displays posts filtered by tag
+ * Explore page component.
+ * @returns {JSX.Element}
  */
 export default function Explore() {
   const [searchParams] = useSearchParams();
@@ -18,9 +19,7 @@ export default function Explore() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const currentTab = "explore";
-  const handleTabChange = () => {};
-
+  // Fetch posts when tag changes
   useEffect(() => {
     let active = true;
     async function loadPosts() {

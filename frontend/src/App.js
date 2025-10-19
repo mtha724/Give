@@ -17,7 +17,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import RequireAuth from './components/RequireAuth';
 import Group from "./pages/Group";
 import PublicProfile from "./pages/PublicProfile";
-import ProfileScreen from "./pages/ProfilePage";
+import ProfileScreen from "./pages/Profile";
 import Post from "./pages/Post";
 import Explore from "./pages/Explore";
 import PostScreen from "./pages/Post";

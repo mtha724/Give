@@ -8,6 +8,10 @@ import LeftSideBar from "../components/LeftSideBar";
 import GroupSearch from "../components/GroupSearch";
 import { profileTabConfig } from "../config/tabConfig";
 
+/**
+ * Public profile page component.
+ * @returns {JSX.Element}
+ */
 export default function PublicProfile() {
   const { userId } = useParams();
   const { user: authUser } = useAuth();
@@ -15,6 +19,7 @@ export default function PublicProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch user data when userId changes
   useEffect(() => {
     let active = true;
     async function load() {

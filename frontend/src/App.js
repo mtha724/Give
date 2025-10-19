@@ -17,6 +17,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import RequireAuth from './components/RequireAuth';
 import Group from "./pages/Group";
 import ProfileScreen from "./pages/ProfilePage";
+import PostScreen from "./pages/Post";
 
 
 /**
@@ -92,6 +93,10 @@ function App() {
       {
       path: "/profile",
       element: <ProfileScreen />,
+    },
+    {
+      path: "/post/:postId",
+      element: <PostScreen />,
     },
     ],
     },

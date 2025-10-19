@@ -33,3 +33,5 @@ export {default as JoinGroup} from './components/JoinGroup';
 export { default as CreateGroup } from './components/CreateGroup';
 export { default as ProfileScreen } from './pages/ProfilePage';
 export { default as Profile } from './components/Profile';
+export { default as PostScreen } from './pages/Post';
+export { default as PostsContainer, PostContainer } from './components/PostsContainer';
